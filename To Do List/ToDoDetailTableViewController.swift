@@ -16,7 +16,7 @@ private let dateFormatter: DateFormatter = {
 }()
 
 class ToDoDetailTableViewController: UITableViewController {
-
+    
     @IBOutlet weak var noteView: UITextView!
     
     @IBOutlet weak var saveBarButton: UIBarButtonItem!
@@ -63,6 +63,23 @@ class ToDoDetailTableViewController: UITableViewController {
         dateLabel.textColor = (reminderSwitch.isOn ? .black : .gray)
         dateLabel.text = dateFormatter.string(from: toDoItem.date)
         enableDisableSaveButton(text: nameField.text!)
+        updateReminderSwitch()
+    }
+    
+    
+    func updateReminderSwitch(){
+        LocalNotificationManager.isAuthorized { (authorized) in
+            DispatchQueue.main.async {
+                if !authorized && self.reminderSwitch.isOn{
+                    self.oneButtonAlert(tile: "User Has Not Allowed Notifications", message: "Open settings > toDoList > allow notis")
+                    self.reminderSwitch.isOn = false
+                }
+                self.view.endEditing(true)
+                self.dateLabel.textColor = (self.reminderSwitch.isOn ? .black : .gray)
+                self.tableView.beginUpdates()
+                self.tableView.endUpdates()
+            }
+        }
     }
     
     
@@ -78,7 +95,7 @@ class ToDoDetailTableViewController: UITableViewController {
             saveBarButton.isEnabled = false
         }
     }
-
+    
     
     @IBAction func cancelButtonPressed(_ sender: Any) {
         let isPresentingInAddMode = presentingViewController is UINavigationController
@@ -92,10 +109,7 @@ class ToDoDetailTableViewController: UITableViewController {
     
     
     @IBAction func reminderSwitchChanged(_ sender: UISwitch) {
-        self.view.endEditing(true)
-        dateLabel.textColor = (reminderSwitch.isOn ? .black : .gray)
-        tableView.beginUpdates()
-        tableView.endUpdates()
+        updateReminderSwitch()
     }
     
     
@@ -106,7 +120,7 @@ class ToDoDetailTableViewController: UITableViewController {
     
     @IBAction func textFieldEditingChanged(_ sender: UITextField) {
         enableDisableSaveButton(text: sender.text!)
-       
+        
     }
     
 }
